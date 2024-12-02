@@ -2,16 +2,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using CoreLibrary;
+
 using LoggingLibrary;
 using MetaDataLibrary;
 using MODEL;
+using ServiceReference1;
 
 namespace ConsoleApp
 {
     class Program {
         private readonly ILogger _logger;
+
+        public static async Task<int> Main(string[] args) {
+
+
+            // Instantiate the Service wrapper specifying the binding and optionally the Endpoint URL. The BasicHttpBinding could be used instead.
+            var client = new EchoServiceClient(EchoServiceClient.EndpointConfiguration.WSHttpBinding_IEchoService, "https://localhost:5001/EchoService/WSHttps");
+
+            var simpleResult = await client.EchoAsync("Hello");
+            Console.WriteLine(simpleResult);
+
+            var msg = new EchoMessage() { Text = "Hello2" };
+            var msgResult = await client.ComplexEchoAsync(msg);
+            Console.WriteLine(msgResult);
+            return 0;
+        }
+        /*
         public static int Main(string[] args) {
             if (args.Length > 0) {
                 Console.WriteLine("Starting DLL Analyzer in Console Mode...");
@@ -70,7 +89,7 @@ namespace ConsoleApp
                 Console.WriteLine($"Error in reading the dll file {se.Message}");
             }
 
-        }
+        }*/
 
     }
         
