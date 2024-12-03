@@ -69,7 +69,7 @@ namespace MetaDataLibrary
                     assemblyBytes = ms.ToArray();
                 }
 
-                Assembly assembly = Assembly.Load(assemblyBytes);  // Use Stream instead of file path
+                Assembly assembly = Assembly.Load(assemblyBytes);
                 assemblyInfo.Name = assembly.FullName;
 
                 foreach (var type in assembly.GetTypes()) {

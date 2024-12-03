@@ -14,7 +14,6 @@ namespace WCF.services {
 
         public async Task<string> ProcessMetadataResult(byte[] fileBytes) {
             try {
-                // Przekazanie bajtów do pamięci i dalsze przetwarzanie
                 using var memoryStream = new MemoryStream(fileBytes);
 
                 MetadataExtractor metadataExtractor = new MetadataExtractor(new Logger());
