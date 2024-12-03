@@ -45,10 +45,8 @@ namespace MetaDataLibrary
                         var methodInfo = new CoreLibrary.MethodInfo { MethodName = method.Name };
                         typeInfo.Methods.Add(methodInfo);
                         dataDictionary.Add(new DataList { type = "Method", name = method.Name });
-                        await _logger.LogReadMethod(method.Name);
                     }
 
-                    await _logger.LogReadType(type.FullName);
                 }
 
             }catch (Exception) {
@@ -83,10 +81,7 @@ namespace MetaDataLibrary
                         var methodInfo = new CoreLibrary.MethodInfo { MethodName = method.Name };
                         typeInfo.Methods.Add(methodInfo);
                         dataDictionary.Add(new DataList { type = "Method", name = method.Name });
-                        await _logger.LogReadMethod(method.Name);
                     }
-
-                    await _logger.LogReadType(type.FullName);
                 }
 
             } catch (Exception) {

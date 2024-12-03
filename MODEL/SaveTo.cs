@@ -43,7 +43,6 @@ namespace MODEL {
                     if (counter == 0) {
                         textWriter.WriteStartElement("ClassType");
                         textWriter.WriteAttributeString("Name", data.name);
-                        _logger.LogXmlClassSaved(data.name);
                     }
                     
                     if (counter == dictionary.Count) {
@@ -59,7 +58,6 @@ namespace MODEL {
 
                 } else if(data.type == "Method") {
                     textWriter.WriteElementString("Method", data.name);
-                    _logger.LogXmlMethodSaved(data.name);
                 }
                 
 

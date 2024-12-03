@@ -11,14 +11,12 @@ namespace LoggingLibrary {
         public Task LogErrorAsync();
         public Task LogStartReadAsync();
 
-        public Task LogReadType(string message);
-        public Task LogReadMethod(string message);
+
         public Task LogFinishAsync();
 
         public Task LogStartXmlSave();
         public Task LogErrorXmlSave(string message);
-        public Task LogXmlClassSaved(string message);
-        public Task LogXmlMethodSaved(string message);
+
 
     }
 }

@@ -23,7 +23,7 @@ namespace ConsoleApp
             while (true) {
 
                 Console.WriteLine("====================");
-                Console.WriteLine("\tConsole DDL Extractor");
+                Console.WriteLine("Console DDL Extractor");
                 Console.WriteLine("====================");
                 Console.WriteLine("MENU\n1.Server Side.\n2.Locally");
                 string choose = Console.ReadLine();
@@ -45,6 +45,7 @@ namespace ConsoleApp
                         string dllPath = Console.ReadLine();
 
                         if (!File.Exists(dllPath)) {
+                            Console.Clear();
                             Console.WriteLine($"File {dllPath} not found.");
                             break;
                         }
@@ -115,6 +116,7 @@ namespace ConsoleApp
 
 
             } catch (Exception se) {
+                Console.Clear();
                 await logger.LogErrorAsync();
                 Console.WriteLine($"Error in reading the dll. {se.Message}");
             }
