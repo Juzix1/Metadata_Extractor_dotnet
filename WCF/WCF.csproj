@@ -11,4 +11,9 @@
     <PackageReference Include="CoreWCF.Primitives" Version="1.6.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MODEL\MODEL.csproj" />
+    <ProjectReference Include="..\SERVICES\SERVICES.csproj" />
+  </ItemGroup>
+
 </Project>

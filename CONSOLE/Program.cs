@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -8,8 +10,9 @@ using CoreLibrary;
 
 using LoggingLibrary;
 using MetaDataLibrary;
+using MetadataService;
 using MODEL;
-using ServiceReference1;
+
 
 namespace ConsoleApp
 {
@@ -18,19 +21,39 @@ namespace ConsoleApp
 
         public static async Task<int> Main(string[] args) {
 
+            var client = new MetadataServiceClient(MetadataServiceClient.EndpointConfiguration.WSHttpBinding_IMetadataService, "https://localhost:5001/MetadataService/WSHttps");
+            string dllPath = @"C:\Users\kapik\Documents\Visual Studio 2022\MetaDataExtractor\Metadata_Extractor_dotnet\CONSOLE\bin\Debug\net6.0\Model.dll";
 
-            // Instantiate the Service wrapper specifying the binding and optionally the Endpoint URL. The BasicHttpBinding could be used instead.
-            var client = new EchoServiceClient(EchoServiceClient.EndpointConfiguration.WSHttpBinding_IEchoService, "https://localhost:5001/EchoService/WSHttps");
+            if (!File.Exists(dllPath)) {
+                Console.WriteLine($"File {dllPath} not found.");
+                return 0;
+            }
 
-            var simpleResult = await client.EchoAsync("Hello");
-            Console.WriteLine(simpleResult);
+            byte[] fileBytes = File.ReadAllBytes(dllPath);
 
-            var msg = new EchoMessage() { Text = "Hello2" };
-            var msgResult = await client.ComplexEchoAsync(msg);
-            Console.WriteLine(msgResult);
+            try {
+                string result = await client.ProcessMetadataResultAsync(fileBytes);
+                Console.WriteLine($"Processed Metadata: {result}");
+            } catch (Exception ex) {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        
+    
+
+
+
+            //var client = new EchoServiceClient(EchoServiceClient.EndpointConfiguration.WSHttpBinding_IEchoService, "https://localhost:5001/EchoService/WSHttps");
+
+            //var simpleResult = await client.EchoAsync("Hello");
+            //Console.WriteLine(simpleResult);
+
+            //var msg = new EchoMessage() { Text = "Hello2" };
+            //var msgResult = await client.ComplexEchoAsync(msg);
+            //Console.WriteLine(msgResult);
+            //return 0;
             return 0;
-        }
-        /*
+        }/*
+        
         public static int Main(string[] args) {
             if (args.Length > 0) {
                 Console.WriteLine("Starting DLL Analyzer in Console Mode...");
@@ -43,7 +66,7 @@ namespace ConsoleApp
 
 
         }
-
+        
         public static async Task showMetaData(string filePath) {
             var logger = new Logger();
             await logger.LogStartAsync();
