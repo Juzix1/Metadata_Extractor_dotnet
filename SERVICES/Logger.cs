@@ -28,14 +28,10 @@ namespace MetaDataLibrary {
         public async Task LogErrorAsync() => await AppendLogAsync("Error during DLL search.");
         public async Task LogStartReadAsync() => await AppendLogAsync("Starting to read the DLL file.");
 
-        public async Task LogReadType(string message) => await AppendLogAsync("Loaded Type: " + message);
-        public async Task LogReadMethod(string message) => await AppendLogAsync("Loaded Method: " + message);
         public async Task LogFinishAsync() => await AppendLogAsync("Finished reading the DLL file.");
-
         public async Task LogStartXmlSave() => await AppendLogAsync("Starting to save file");
         public async Task LogErrorXmlSave(string message) => await AppendLogAsync("Failed to save XML file. Error: "+message);
-        public async Task LogXmlClassSaved(string message) => await AppendLogAsync("Saved Class "+message);
-        public async Task LogXmlMethodSaved(string message) => await AppendLogAsync("Saved Method " + message);
+
 
     }
 }
