@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using CoreLibrary;
@@ -12,6 +13,7 @@ using LoggingLibrary;
 using MetaDataLibrary;
 using MetadataService;
 using MODEL;
+using MODEL.Plugins;
 
 
 namespace ConsoleApp
@@ -20,8 +22,11 @@ namespace ConsoleApp
         private readonly ILogger _logger;
         
         public static async Task<int> Main(string[] args) {
-            while (true) {
 
+
+
+
+            while (true) {
                 Console.WriteLine("====================");
                 Console.WriteLine("Console DDL Extractor");
                 Console.WriteLine("====================");
@@ -32,8 +37,8 @@ namespace ConsoleApp
                     case "2":
                         Console.Clear();
                         
-                        Console.WriteLine("Starting DLL Analyzer in Console Mode...");
-                        Console.WriteLine("Write dll file path:");
+                        Console.WriteLine("Starting File Analyzer in Console Mode...");
+                        Console.WriteLine("Write file path:");
                         string path = Console.ReadLine();
                         await showMetaData(path);
                             
@@ -41,7 +46,7 @@ namespace ConsoleApp
                     case "1":
                         Console.Clear();
                         var client = new MetadataServiceClient(MetadataServiceClient.EndpointConfiguration.WSHttpBinding_IMetadataService, "https://localhost:5001/MetadataService/WSHttps");
-                        Console.WriteLine("Write dll file path:");
+                        Console.WriteLine("Write file path:");
                         string dllPath = Console.ReadLine();
 
                         if (!File.Exists(dllPath)) {
@@ -72,55 +77,34 @@ namespace ConsoleApp
 
 
         }
-        
-        public static async Task showMetaData(string filePath) {
-            var logger = new Logger();
-            await logger.LogStartAsync();
 
-            try {
-                MetadataExtractor metaData = new MetadataExtractor(logger);
-                AssemblyInfo assemblyInfo = await metaData.ExtractMetadataAsync(filePath);
+        public static async Task showMetaData(string file) {
+            if (!File.Exists(file)) {
+                Console.WriteLine("Invalid file Path!");
+            } else {
+                var loader = new PluginLoader();
+                loader.LoadPlugins();
 
-                if (assemblyInfo.Types.Count == 0)
-                    throw new Exception("File is Empty");
-                foreach (var type in assemblyInfo.Types) {
-                    Console.WriteLine($"Type: {type.TypeName}");
-                    foreach (var method in type.Methods) {
-                        Console.WriteLine($"  Method: {method.MethodName}");
-                    }
-                }
-                Console.WriteLine("Do you want to save this Metadata to XML File? [Y|N]");
-                try {
-                    string choice = Console.ReadLine();
-
-                    switch (choice) {
-                        case "y":
-                        case "Y":
-                            SaveTo save = new SaveTo(logger);
-                            save.XmlFile(metaData.getDataList());
-                            Console.WriteLine("XML file succesfully saved!");
-
-                            break;
-                        case "n":
-                        case "N":
-                            Console.WriteLine("Ok. Goodbye");
-                            break;
-                        default:
-                            Console.WriteLine("Invalid Input");
-                            break;
-
-                    }
-                } catch {
-                    Console.WriteLine("Invalid Input");
+                Console.WriteLine("Available plugins:");
+                var plugins = loader.Plugins.ToList();
+                for (int i = 0; i < plugins.Count; i++) {
+                    Console.WriteLine($"{i + 1}: {plugins[i].Name}");
                 }
 
+                Console.Write("Select a plugin by number: ");
+                int selection = int.Parse(Console.ReadLine());
 
-            } catch (Exception se) {
-                Console.Clear();
-                await logger.LogErrorAsync();
-                Console.WriteLine($"Error in reading the dll. {se.Message}");
+                if (selection > 0 && selection <= plugins.Count) {
+                    var selectedPlugin = plugins[selection - 1];
+                    Console.WriteLine($"Using plugin: {selectedPlugin.Name}");
+
+                    var obj = await selectedPlugin.Read(file);
+                    string result = obj.ToString();
+                    Console.WriteLine($"Result: {result}");
+                } else {
+                    Console.WriteLine("Invalid selection.");
+                }
             }
-
         }
 
     }
