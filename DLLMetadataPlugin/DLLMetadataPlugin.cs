@@ -18,7 +18,6 @@ namespace DLLMetadataPlugin {
             MetadataExtractor metaData = new MetadataExtractor(log);
             assemblyInfo = await metaData.ExtractMetadataAsync(sourcePath);
             return assemblyInfo;
-            return this;
         }
         public async Task<object> ReadStream(Stream stream) {
             try {
@@ -32,9 +31,7 @@ namespace DLLMetadataPlugin {
 
             
                 Assembly assembly = Assembly.Load(data);
-                //assemblyInfo = ExtractMetadata(assembly);
                 return ExtractMetadata(assembly);
-                return this;
             } catch (BadImageFormatException) {
                 throw new Exception("The stream does not contain a valid .NET assembly.");
             }

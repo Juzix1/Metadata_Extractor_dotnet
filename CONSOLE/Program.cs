@@ -27,6 +27,7 @@ namespace ConsoleApp
 
 
             while (true) {
+
                 Console.WriteLine("====================");
                 Console.WriteLine("Console DDL Extractor");
                 Console.WriteLine("====================");
@@ -99,10 +100,11 @@ namespace ConsoleApp
         }
 
         public static async Task showMetaData(string file) {
+            var loader = new PluginLoader();
             if (!File.Exists(file)) {
                 Console.WriteLine("Invalid file Path!");
             } else {
-                var loader = new PluginLoader();
+                
                 loader.LoadPlugins();
 
                 Console.WriteLine("Available plugins:");
