@@ -16,11 +16,16 @@ namespace WCF.services {
                 _pluginLoader.LoadPlugins();
                 var plugins = _pluginLoader.Plugins.ToList();
 
-                if (plugins.Count == 0) {
-                    throw new Exception("No plugins available to process the file.");
+                if (index < 0 || index >= plugins.Count) {
+                    throw new ArgumentOutOfRangeException(nameof(index), "Selected plugin index is out of range.");
                 }
 
                 var plugin = plugins[index];
+
+                if (fileBytes == null || fileBytes.Length == 0) {
+                    throw new ArgumentException("File data is empty.", nameof(fileBytes));
+                }
+
                 using var memoryStream = new MemoryStream(fileBytes);
                 var result = await plugin.ReadStream(memoryStream);
 

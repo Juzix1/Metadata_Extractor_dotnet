@@ -44,8 +44,9 @@ namespace ConsoleApp
                             
                             break;
                     case "1":
-                        Console.Clear();
-                        var client = new MetadataServiceClient(MetadataServiceClient.EndpointConfiguration.WSHttpBinding_IMetadataService, "https://localhost:5001/MetadataService/WSHttps");
+                        try {
+                            Console.Clear();
+                            var client = new MetadataServiceClient(MetadataServiceClient.EndpointConfiguration.WSHttpBinding_IMetadataService, "https://localhost:5001/MetadataService/WSHttps");
                         //Console.WriteLine("Available plugins:");
 
                         //var loader = new PluginLoader();
@@ -58,7 +59,9 @@ namespace ConsoleApp
                         Console.WriteLine(await client.ShowAvailableAddonsAsync());
 
                         Console.Write("Select a plugin by number: ");
-                        int selection = int.Parse(Console.ReadLine());
+                        
+                            int selection = int.Parse(Console.ReadLine());
+                        
 
                         Console.WriteLine("Write file path:");
                         string dllPath = Console.ReadLine();
@@ -73,10 +76,13 @@ namespace ConsoleApp
 
                         try {
 
-                            string result = await client.ProcessMetadataResultAsync(fileBytes, selection-1);
+                            var result = await client.ProcessMetadataResultAsync(fileBytes, selection-1);
                             Console.WriteLine($"Processed Metadata: {result.ToString()}");
                         } catch (Exception ex) {
                             Console.WriteLine($"Error: {ex.Message}");
+                        }
+                        } catch (Exception e) {
+                            Console.WriteLine(e.Message);
                         }
                         break;
                     default:

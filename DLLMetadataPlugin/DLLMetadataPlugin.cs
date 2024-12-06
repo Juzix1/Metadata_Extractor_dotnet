@@ -17,35 +17,29 @@ namespace DLLMetadataPlugin {
             var log = new Logger();
             MetadataExtractor metaData = new MetadataExtractor(log);
             assemblyInfo = await metaData.ExtractMetadataAsync(sourcePath);
+            return assemblyInfo;
             return this;
         }
         public async Task<object> ReadStream(Stream stream) {
+            try {
+                    using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
 
-            var log = new Logger();
-            MetadataExtractor metaData = new MetadataExtractor(log);
-            assemblyInfo = await metaData.ExtractMetadataStream(stream);
-            return this;
-        }
-
-
-        public override string ToString() {
-            if (assemblyInfo == null || assemblyInfo.Types.Count == 0) {
-                return "No data available.";
-            }
-
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"Assembly: {assemblyInfo.Name}");
-
-            foreach (var type in assemblyInfo.Types) {
-                sb.AppendLine($"Type: {type.TypeName}");
-
-                foreach (var method in type.Methods) {
-                    sb.AppendLine($"  Method: {method.MethodName}");
+                var data = memoryStream.ToArray();
+                if (data == null || data.Length == 0) {
+                    throw new Exception("Stream is empty or contains invalid data.");
                 }
-            }
 
-            return sb.ToString();
+            
+                Assembly assembly = Assembly.Load(data);
+                //assemblyInfo = ExtractMetadata(assembly);
+                return ExtractMetadata(assembly);
+                return this;
+            } catch (BadImageFormatException) {
+                throw new Exception("The stream does not contain a valid .NET assembly.");
+            }
         }
+
         private AssemblyInfo ExtractMetadata(Assembly assembly) {
             var assemblyInfo = new AssemblyInfo { Name = assembly.FullName };
             foreach (var type in assembly.GetTypes()) {
