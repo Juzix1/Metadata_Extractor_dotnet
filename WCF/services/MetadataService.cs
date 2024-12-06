@@ -1,52 +1,52 @@
-﻿using CoreWCF;
-using MetaDataLibrary;
+﻿using CoreLibrary;
+using CoreWCF;
 using LoggingLibrary;
-using ILogger = LoggingLibrary.ILogger;
+using MODEL.Plugins;
 using System.Diagnostics;
-using System.Reflection;
-using CoreLibrary;
-using Microsoft.Extensions.Logging;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace WCF.services {
     [ServiceBehavior(IncludeExceptionDetailInFaults = true)]
     public class MetadataService : IMetadataService {
-
-        public async Task<string> ProcessMetadataResult(byte[] fileBytes) {
+        public async Task<string> ProcessMetadataResult(byte[] fileBytes, int index) {
             try {
+                PluginLoader _pluginLoader = new PluginLoader();
+                _pluginLoader.LoadPlugins();
+                var plugins = _pluginLoader.Plugins.ToList();
+
+                if (plugins.Count == 0) {
+                    throw new Exception("No plugins available to process the file.");
+                }
+
+                var plugin = plugins[index];
                 using var memoryStream = new MemoryStream(fileBytes);
+                var result = await plugin.ReadStream(memoryStream);
 
-                MetadataExtractor metadataExtractor = new MetadataExtractor(new Logger());
-                AssemblyInfo assemblyInfo = await metadataExtractor.ExtractMetadataStream(memoryStream);
-
-                var resultBuilder = new StringBuilder();
-
-                foreach (var type in assemblyInfo.Types) {
-                    resultBuilder.AppendLine(type.TypeName);
-
-                    foreach (var method in type.Methods) {
-                        resultBuilder.AppendLine($"  {method.MethodName}");
-                    }
-                }
-
-                string result = resultBuilder.ToString();
-
-                if (string.IsNullOrEmpty(result)) {
-                    throw new Exception("No metadata was extracted from DLL.");
-                }
-
-                return result;
-
-            } catch (UnauthorizedAccessException ex) {
-                return $"Access Denied Error: {ex.Message}";
-            } catch (IOException ex) {
-                return $"IO Error: {ex.Message}";
-            } catch (ReflectionTypeLoadException ex) {
-                var loaderExceptions = ex.LoaderExceptions.Select(e => e.Message).ToList();
-                throw new Exception("Failed to load assembly types. See logs for details.");
+                return result?.ToString() ?? "Plugin returned no valid data.";
             } catch (Exception ex) {
                 return $"Error: {ex.Message}";
             }
         }
+        public string ShowAvailableAddons() {
+            try {
+                var loader = new PluginLoader();
+
+                loader.LoadPlugins();
+                var plugins = loader.Plugins.ToList();
+                if (plugins.Count == 0) {
+                    return "No plugins available.";
+                }
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < plugins.Count; i++) {
+                    builder.AppendLine($"{i + 1}: {plugins[i].Name}");
+                }
+                return builder.ToString();
+            } catch (Exception ex) {
+                Debug.WriteLine($"Error: {ex.Message}");
+                return $"Error: {ex.Message}";
+            }
+            }
     }
 }

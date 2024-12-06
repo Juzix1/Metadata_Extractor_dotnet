@@ -4,6 +4,7 @@ using MODEL;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -69,7 +70,20 @@ namespace MetaDataLibrary
                     assemblyBytes = ms.ToArray();
                 }
 
-                Assembly assembly = Assembly.Load(assemblyBytes);
+                // Validate that the byte array contains valid assembly data
+                if (assemblyBytes == null || assemblyBytes.Length == 0) {
+                    throw new Exception("Stream is empty or contains invalid data.");
+                }
+
+                // Attempt to load the assembly
+                Assembly assembly;
+                try {
+                    assembly = Assembly.Load(assemblyBytes);
+                } catch (BadImageFormatException ex) {
+                    throw new Exception("The stream does not contain a valid .NET assembly.", ex);
+                }
+
+                // Extract metadata
                 assemblyInfo.Name = assembly.FullName;
 
                 foreach (var type in assembly.GetTypes()) {
@@ -84,12 +98,21 @@ namespace MetaDataLibrary
                     }
                 }
 
-            } catch (Exception) {
+                // Check if metadata was extracted
+                if (assemblyInfo.Types.Count == 0) {
+                    throw new Exception("No types were found in the assembly.");
+                }
+
+            } catch (Exception ex) {
+                // Log the error for better visibility during debugging
                 await _logger.LogErrorAsync();
+                Debug.WriteLine($"Error extracting metadata: {ex.Message}");
+                throw; // Re-throw the exception for higher-level handling
             }
 
             return assemblyInfo;
         }
+
 
         public async Task<AssemblyInfo> GetDataAsync(string path)
         {

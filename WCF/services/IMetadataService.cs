@@ -6,7 +6,9 @@ namespace WCF.services {
     [ServiceContract]
     public interface IMetadataService {
         [OperationContract]
-        Task<string> ProcessMetadataResult(byte[] fileBytes);
+        Task<string> ProcessMetadataResult(byte[] fileBytes, int index);
+        [OperationContract]
+        string ShowAvailableAddons();
     }
 
 }

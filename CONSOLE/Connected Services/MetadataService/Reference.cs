@@ -17,7 +17,10 @@ namespace MetadataService
     {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IMetadataService/ProcessMetadataResult", ReplyAction="http://tempuri.org/IMetadataService/ProcessMetadataResultResponse")]
-        System.Threading.Tasks.Task<string> ProcessMetadataResultAsync(byte[] fileBytes);
+        System.Threading.Tasks.Task<string> ProcessMetadataResultAsync(byte[] fileBytes, int index);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IMetadataService/ShowAvailableAddons", ReplyAction="http://tempuri.org/IMetadataService/ShowAvailableAddonsResponse")]
+        System.Threading.Tasks.Task<string> ShowAvailableAddonsAsync();
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
@@ -63,9 +66,14 @@ namespace MetadataService
         {
         }
         
-        public System.Threading.Tasks.Task<string> ProcessMetadataResultAsync(byte[] fileBytes)
+        public System.Threading.Tasks.Task<string> ProcessMetadataResultAsync(byte[] fileBytes, int index)
         {
-            return base.Channel.ProcessMetadataResultAsync(fileBytes);
+            return base.Channel.ProcessMetadataResultAsync(fileBytes, index);
+        }
+        
+        public System.Threading.Tasks.Task<string> ShowAvailableAddonsAsync()
+        {
+            return base.Channel.ShowAvailableAddonsAsync();
         }
         
         public virtual System.Threading.Tasks.Task OpenAsync()

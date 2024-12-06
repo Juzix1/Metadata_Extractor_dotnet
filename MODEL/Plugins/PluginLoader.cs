@@ -17,7 +17,6 @@ namespace MODEL.Plugins {
 
             string rootPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..",".."));
             string pluginFolder = Path.Combine(rootPath, "Plugins");
-
             if (!Directory.Exists(pluginFolder)) {
                 throw new DirectoryNotFoundException($"Plugin folder not found: {pluginFolder}");
             }
