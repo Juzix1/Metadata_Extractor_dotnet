@@ -55,7 +55,7 @@ namespace DLLMetadataPlugin {
         }
         public override string ToString() {
             StringBuilder sb = new();
-            sb.AppendLine($"\nAssembly: {Name}");
+            sb.AppendLine($"\nAssembly: {assemblyInfo.Name}");
 
             foreach (var type in assemblyInfo.Types) {
                 sb.AppendLine($"Type: {type.TypeName}");

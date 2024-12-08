@@ -32,6 +32,8 @@ namespace MetaDataLibrary {
                         Header = plugin.Name,
                         Tag = plugin
                     };
+                    if (plugin == _pluginLoader.Plugins.FirstOrDefault())
+                        menuItem.IsChecked = true;
                     menuItem.Click += PluginMenuItem_Click;
                     pluginsMenu.Items.Add(menuItem);
                 }
@@ -49,6 +51,11 @@ namespace MetaDataLibrary {
 
         private void PluginMenuItem_Click(object sender, RoutedEventArgs e) {
             if (sender is MenuItem menuItem && menuItem.Tag is IMetadataPlugin plugin) {
+                foreach (MenuItem item in pluginsMenu.Items) {
+                    item.IsChecked = false;
+                }
+                
+                menuItem.IsChecked = true;
                 _selectedPlugin = plugin;
                 MessageBox.Show($"Selected plugin: {_selectedPlugin.Name}");
             }
