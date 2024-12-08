@@ -9,6 +9,7 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Plugins" x:Name="pluginsMenu" />
+            <MenuItem Header="Save" x:Name="saveMenu"/>
         </Menu>
         <Grid>
             <Grid.RowDefinitions>

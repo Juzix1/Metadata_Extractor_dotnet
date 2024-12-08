@@ -10,15 +10,20 @@ using System.Threading.Tasks;
 using MODEL.Plugins;
 using System.Collections;
 using CoreLibrary;
+using System.Xml.Serialization;
+using MODEL;
+using Castle.Core.Logging;
 
 namespace MetaDataLibrary {
     public partial class MainWindow : Window {
         private readonly PluginLoader _pluginLoader;
         private IMetadataPlugin _selectedPlugin;
+        private Logger logger;
 
         public MainWindow() {
             InitializeComponent();
             _pluginLoader = new PluginLoader();
+            logger = new Logger();
             LoadPlugins();
         }
 
@@ -38,10 +43,13 @@ namespace MetaDataLibrary {
                     pluginsMenu.Items.Add(menuItem);
                 }
 
+                var saveToXML = new MenuItem{ Header = "to XML"};
+                saveToXML.Click += SaveToXML_Click;
+                saveMenu.Items.Add(saveToXML);
+
                 // Domyślny wybór pierwszego pluginu
                 if (_pluginLoader.Plugins.Any()) {
                     _selectedPlugin = _pluginLoader.Plugins.First();
-                    //MessageBox.Show($"Default plugin selected: {_selectedPlugin.Name}");
                 }
             } catch (Exception ex) {
                 Debug.WriteLine($"Error loading plugins: {ex.Message}");
@@ -60,6 +68,54 @@ namespace MetaDataLibrary {
                 MessageBox.Show($"Selected plugin: {_selectedPlugin.Name}");
             }
         }
+        private void SaveToXml(AssemblyInfo assemblyInfo) {
+            try {
+                // Prompt for file save location
+                SaveFileDialog saveFileDialog = new SaveFileDialog {
+                    Filter = "XML files (*.xml)|*.xml",
+                    FileName = $"{assemblyInfo.Name}.xml"
+                };
+
+                if (saveFileDialog.ShowDialog() == true) {
+                    var dataList = new List<DataList>();
+
+                    // Convert AssemblyInfo to DataList
+                    foreach (var type in assemblyInfo.Types) {
+                        dataList.Add(new DataList { type = type.TypeName, name = type.Methods.FirstOrDefault()?.MethodName ?? string.Empty });
+                    }
+
+
+                    var saveTo = new SaveTo(logger);
+
+                    // Use the assembly name as the root element
+                    saveTo.XmlFile(assemblyInfo.Name, dataList, saveFileDialog.FileName);
+
+                    MessageBox.Show("File saved successfully.");
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Error saving file: {ex.Message}");
+            }
+        }
+        private void SaveToXML_Click(object sender, RoutedEventArgs e) {
+            if (_selectedPlugin == null) {
+                MessageBox.Show("No plugin selected.");
+                return;
+            }
+
+            try {
+                var assemblyInfo = _selectedPlugin.GetAssemblyInfo();
+                if (assemblyInfo != null) {
+                    //var save = new SaveTo(logger);
+                    SaveToXml(assemblyInfo);
+                    //save.XmlFile(assemblyInfo);
+                } else {
+                    MessageBox.Show("No assembly information available to save.");
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Error saving data: {ex.Message}");
+            }
+        }
+        
 
         private async void SearchFile(object sender, RoutedEventArgs e) {
             if (_selectedPlugin == null) {
