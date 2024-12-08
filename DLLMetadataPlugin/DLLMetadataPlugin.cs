@@ -17,7 +17,7 @@ namespace DLLMetadataPlugin {
             var log = new Logger();
             MetadataExtractor metaData = new MetadataExtractor(log);
             assemblyInfo = await metaData.ExtractMetadataAsync(sourcePath);
-            return assemblyInfo;
+            return this;
         }
         public async Task<object> ReadStream(Stream stream) {
             try {
@@ -48,6 +48,24 @@ namespace DLLMetadataPlugin {
                 }
             }
             return assemblyInfo;
+        }
+
+        public AssemblyInfo GetAssemblyInfo() {
+            return assemblyInfo;
+        }
+        public override string ToString() {
+            StringBuilder sb = new();
+            sb.AppendLine($"\nAssembly: {Name}");
+
+            foreach (var type in assemblyInfo.Types) {
+                sb.AppendLine($"Type: {type.TypeName}");
+
+                foreach (var method in type.Methods) {
+                    sb.AppendLine($"  Method: {method.MethodName}");
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CoreLibrary
-{
+namespace CoreLibrary {
     public class AssemblyInfo {
         public string Name { get; set; }
         public List<TypeInfo> Types { get; set; } = new List<TypeInfo>();
@@ -24,6 +24,6 @@ namespace CoreLibrary
 
             return sb.ToString();
         }
-    }
 
+    }
 }

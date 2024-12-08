@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoreLibrary;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace MODEL.Plugins {
         string Name { get; }
         Task<object> Read(string sourcePath);
         Task<object> ReadStream(Stream stream);
+        AssemblyInfo GetAssemblyInfo();
     }
 }

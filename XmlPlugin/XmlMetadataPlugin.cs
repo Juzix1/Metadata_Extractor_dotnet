@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
+using CoreLibrary;
 using MODEL;
 using MODEL.Plugins;
 
@@ -10,9 +11,15 @@ namespace XMLMetadataPlugin {
     public class XMLMetadataPlugin : IMetadataPlugin {
         public string Name => "XML Metadata Plugin";
         private List<DataList> _dataDictionary = new List<DataList>();
+        AssemblyInfo assemblyInfo;
         public async Task<object> Read(string sourcePath) {
-            return await Task.Run(() => ExtractMetadataFromFile(sourcePath));
+            await Task.Run(() => ExtractMetadataFromFile(sourcePath));
+            return this;
         }
+        public AssemblyInfo GetAssemblyInfo() {
+            return assemblyInfo;
+        }
+
         public async Task<object> ReadStream(Stream stream) {
             return await Task.Run(() => ExtractMetadataFromStream(stream));
         }
@@ -24,13 +31,24 @@ namespace XMLMetadataPlugin {
                 }
 
                 _dataDictionary.Clear();
+
+                
+
+                // Now, let's read the file using XmlReader
                 using (var reader = XmlReader.Create(filePath)) {
+                    if (reader.ReadState == ReadState.Initial) {
+                        Console.WriteLine("Starting XML read...");
+                    }
+
                     ExtractXmlData(reader);
                 }
 
-                return this;
+                return this; // Or you can return _dataDictionary if you need it
+            } catch (XmlException xmlEx) {
+                Console.WriteLine($"Error reading XML file: {xmlEx.Message}");
+                return null;
             } catch (Exception ex) {
-                Console.WriteLine($"Error reading XML file: {ex.Message}");
+                Console.WriteLine($"General error: {ex.Message}");
                 return null;
             }
         }
@@ -43,37 +61,54 @@ namespace XMLMetadataPlugin {
 
                 _dataDictionary.Clear();
                 stream.Seek(0, SeekOrigin.Begin); // Reset stream position
+
                 using (var reader = XmlReader.Create(stream)) {
                     ExtractXmlData(reader);
                 }
 
-                return this;
+                return this; // Or you can return _dataDictionary if you need it
+            } catch (XmlException xmlEx) {
+                Console.WriteLine($"Error reading XML stream: {xmlEx.Message}");
+                return null;
             } catch (Exception ex) {
-                Console.WriteLine($"Error reading XML stream: {ex.Message}");
+                Console.WriteLine($"General error: {ex.Message}");
                 return null;
             }
         }
 
         private void ExtractXmlData(XmlReader reader) {
-            while (reader.Read()) {
-                if (reader.NodeType == XmlNodeType.Element) {
-                    string elementName = reader.Name;
-                    string elementValue = string.Empty;
+            try {
+                assemblyInfo = new AssemblyInfo();
+                while (reader.Read()) {
+                    if (reader.NodeType == XmlNodeType.Element) {
+                        if (assemblyInfo.Name == null) {
+                            assemblyInfo.Name = reader.Name;
+                            _dataDictionary.Add(new DataList { name = "File", type = assemblyInfo.Name });
+                           
+                        } else {
+                            string elementName = reader.Name;
+                            var typeInfo = new TypeInfo { TypeName = reader.Name };
+                            assemblyInfo.Types.Add(typeInfo);
+                            string elementValue = string.Empty;
 
-                    if (reader.IsEmptyElement) {
-                        elementValue = "(empty)";
-                    } else if (reader.Read() && reader.NodeType == XmlNodeType.Text) {
-                        elementValue = reader.Value;
+                            if (reader.IsEmptyElement) {
+                                elementValue = "(empty)";
+                                typeInfo.Methods.Add(new MethodInfo { MethodName = "" });
+                            } else if (reader.Read() && reader.NodeType == XmlNodeType.Text) {
+                                elementValue = reader.Value;
+                                typeInfo.Methods.Add(new MethodInfo { MethodName = reader.Value });
+                            }
+
+                            var datalist = new DataList { type = elementName, name = elementValue };
+                            _dataDictionary.Add(datalist);
+                        }
+                        
                     }
-
-                    _dataDictionary.Add(new DataList {
-                        type = elementName,
-                        name = elementValue
-                    });
                 }
+            } catch (XmlException xmlEx) {
+                Console.WriteLine($"XML Read Error: {xmlEx.Message}");
             }
         }
-        
 
         public override string ToString() {
             if (_dataDictionary.Count == 0) {
@@ -81,12 +116,13 @@ namespace XMLMetadataPlugin {
             }
 
             StringBuilder sb = new StringBuilder();
-
             foreach (var data in _dataDictionary) {
-                sb.AppendLine($"{data.type}: {data.name}");
+                sb.AppendLine(data.name + ": " + data.type);
             }
 
             return sb.ToString();
         }
+
+
     }
 }
