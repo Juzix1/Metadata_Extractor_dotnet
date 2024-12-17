@@ -62,10 +62,8 @@ namespace MODEL {
                     connection.Open();
                     Console.WriteLine("Database connection opened.");
 
-                    // Rozpoczynamy transakcję
                     using (SqlTransaction transaction = connection.BeginTransaction()) {
                         try {
-                            // Czyszczenie tabel
                             string truncateTypesQuery = "TRUNCATE TABLE Types";
                             string truncateMethodsQuery = "TRUNCATE TABLE Methods";
 
@@ -76,10 +74,8 @@ namespace MODEL {
                                 truncateMethodsCommand.ExecuteNonQuery();
                             }
 
-                            // Słownik do przechowywania TypeId dla poszczególnych TypeName
                             Dictionary<string, int> typeIds = new Dictionary<string, int>();
 
-                            // Dodajemy Type do bazy danych
                             foreach (var type in assemblyInfo.Types) {
                                 string selectTypeQuery = "SELECT TypeId FROM Types WHERE TypeName = @TypeName";
                                 using (SqlCommand selectTypeCommand = new SqlCommand(selectTypeQuery, connection, transaction)) {
@@ -102,7 +98,6 @@ namespace MODEL {
                                 }
                             }
 
-                            // Dodajemy Method do bazy danych
                             foreach (var type in assemblyInfo.Types) {
                                 if (type.Methods != null) {
                                     foreach (var method in type.Methods) {
@@ -134,11 +129,9 @@ namespace MODEL {
                                 }
                             }
 
-                            // Zatwierdzenie transakcji
                             transaction.Commit();
                             _logger.LogFinishAsync();
                         } catch (Exception ex) {
-                            // W przypadku błędu, wycofujemy transakcję
                             transaction.Rollback();
                             _logger.LogErrorDBSave($"Error saving data to the database: {ex.Message}");
                         }

@@ -91,13 +91,9 @@ namespace ConsoleApp
                                 SaveTo save = new(new Logger());
                                 var dataList = new List<DataList>();
                                 foreach (var type in assemblyInfo.Types) {
-                                    //string cleanTypeName = CleanTypeName(type.TypeName);
-                                    //if(!string.IsNullOrEmpty(cleanTypeName))
                                         dataList.Add(new DataList { type = "Type", name = type.TypeName });
 
-                                    foreach (var method in type.Methods) {
-                                        //string cleanMethodName = CleanTypeName(method.MethodName);
-                                        //if(!string.IsNullOrEmpty(cleanMethodName))      
+                                    foreach (var method in type.Methods) {    
                                             dataList.Add(new DataList { type = "Method", name = method.MethodName });
                                     }
                             }

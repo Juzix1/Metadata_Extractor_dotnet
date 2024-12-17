@@ -93,7 +93,6 @@ namespace MetaDataLibrary {
         }
         private void SaveToXml(AssemblyInfo assemblyInfo) {
             try {
-                // Prompt for file save location
                 SaveFileDialog saveFileDialog = new SaveFileDialog {
                     Filter = "XML files (*.xml)|*.xml",
                     FileName = $"{assemblyInfo.Name}.xml"
@@ -102,7 +101,6 @@ namespace MetaDataLibrary {
                 if (saveFileDialog.ShowDialog() == true) {
                     var dataList = new List<DataList>();
 
-                    // Convert AssemblyInfo to DataList
                     foreach (var type in assemblyInfo.Types) {
                         dataList.Add(new DataList { type = type.TypeName, name = type.Methods.FirstOrDefault()?.MethodName ?? string.Empty });
                     }
@@ -110,7 +108,6 @@ namespace MetaDataLibrary {
 
                     var saveTo = new SaveTo(logger);
 
-                    // Use the assembly name as the root element
                     saveTo.XmlFile(assemblyInfo.Name, dataList, saveFileDialog.FileName);
 
                     MessageBox.Show("File saved successfully.");
@@ -141,9 +138,7 @@ namespace MetaDataLibrary {
             try {
                 var assemblyInfo = _selectedPlugin.GetAssemblyInfo();
                 if (assemblyInfo != null) {
-                    //var save = new SaveTo(logger);
                     SaveToXml(assemblyInfo);
-                    //save.XmlFile(assemblyInfo);
                 } else {
                     MessageBox.Show("No assembly information available to save.");
                 }
