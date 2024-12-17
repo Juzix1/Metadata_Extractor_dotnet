@@ -24,14 +24,17 @@ namespace ConsoleApp
         public static async Task<int> Main(string[] args) {
 
 
-
+            string path = "./logs/metadata.xml";
+            PluginLoader loader = new PluginLoader();
+            AssemblyInfo assemblyInfo = null;
 
             while (true) {
+
 
                 Console.WriteLine("====================");
                 Console.WriteLine("Console DDL Extractor");
                 Console.WriteLine("====================");
-                Console.WriteLine("MENU\n1.Server Side.\n2.Locally");
+                Console.WriteLine("MENU\n1.Server Side.\n2.Locally\n3.Save file");
                 string choose = Console.ReadLine();
                 switch (choose) {
 
@@ -39,30 +42,20 @@ namespace ConsoleApp
                         Console.Clear();
                         
                         Console.WriteLine("Starting File Analyzer in Console Mode...");
-                        Console.WriteLine("Write file path:");
-                        string path = Console.ReadLine();
-                        await showMetaData(path);
-                            
-                            break;
+                        assemblyInfo = await showMetaData(loader);
+
+
+                        break;
                     case "1":
                         try {
                             Console.Clear();
                             var client = new MetadataServiceClient(MetadataServiceClient.EndpointConfiguration.WSHttpBinding_IMetadataService, "https://localhost:5001/MetadataService/WSHttps");
-                        //Console.WriteLine("Available plugins:");
-
-                        //var loader = new PluginLoader();
-                        //loader.LoadPlugins();
-                        //var plugins = loader.Plugins.ToList();
-
-                        //for (int i = 0; i < plugins.Count; i++) {
-                        //    Console.WriteLine($"{i + 1}: {plugins[i].Name}");
-                        //}
                         Console.WriteLine(await client.ShowAvailableAddonsAsync());
 
                         Console.Write("Select a plugin by number: ");
                         
                             int selection = int.Parse(Console.ReadLine());
-                        
+                            
 
                         Console.WriteLine("Write file path:");
                         string dllPath = Console.ReadLine();
@@ -86,10 +79,57 @@ namespace ConsoleApp
                             Console.WriteLine(e.Message);
                         }
                         break;
+                        case "3":
+                        Console.Clear();
+                        if (assemblyInfo == null) {
+                            Console.WriteLine("You didn't selected file");
+
+                        } else {
+                            Console.WriteLine("Select save format.\n1.To XML File\n2.to Database");
+                            int selection2 = int.Parse(Console.ReadLine());
+                            try {
+                                SaveTo save = new(new Logger());
+                                var dataList = new List<DataList>();
+                                foreach (var type in assemblyInfo.Types) {
+                                    //string cleanTypeName = CleanTypeName(type.TypeName);
+                                    //if(!string.IsNullOrEmpty(cleanTypeName))
+                                        dataList.Add(new DataList { type = "Type", name = type.TypeName });
+
+                                    foreach (var method in type.Methods) {
+                                        //string cleanMethodName = CleanTypeName(method.MethodName);
+                                        //if(!string.IsNullOrEmpty(cleanMethodName))      
+                                            dataList.Add(new DataList { type = "Method", name = method.MethodName });
+                                    }
+                            }
+
+
+
+                            switch (selection2) {
+                                
+                                case 1:
+                                        save.XmlFile(assemblyInfo.Name,dataList,path);
+                                    break;
+                                case 2:
+
+                                        save.MSDatabase(assemblyInfo);
+                                        break;
+
+                                default:
+                                    Console.Clear();
+                                    Console.WriteLine("Wrong Option");
+                                    break;
+                            }
+                                
+                            } catch (Exception ex) {
+                                Console.WriteLine(ex.Message);
+                            }
+                        }
+                        break;
                     default:
                         Console.Clear();
                         Console.WriteLine("Invalid Choice! Try Again.");
                         break;
+
             }
 
 
@@ -99,14 +139,13 @@ namespace ConsoleApp
 
         }
 
-        public static async Task showMetaData(string file) {
-            var loader = new PluginLoader();
-            if (!File.Exists(file)) {
-                Console.WriteLine("Invalid file Path!");
-            } else {
-                
-                loader.LoadPlugins();
 
+        public static async Task<AssemblyInfo> showMetaData(PluginLoader loader) {
+            loader = new PluginLoader();
+            var assemblyInfo = new AssemblyInfo();
+            try {
+                loader.LoadPlugins();
+                //TOFIX
                 Console.WriteLine("Available plugins:");
                 var plugins = loader.Plugins.ToList();
                 for (int i = 0; i < plugins.Count; i++) {
@@ -116,19 +155,45 @@ namespace ConsoleApp
                 Console.Write("Select a plugin by number: ");
                 int selection = int.Parse(Console.ReadLine());
 
+
+                Console.WriteLine("Write file path:");
+                string file = Console.ReadLine();
+
                 if (selection > 0 && selection <= plugins.Count) {
                     var selectedPlugin = plugins[selection - 1];
                     Console.WriteLine($"Using plugin: {selectedPlugin.Name}");
 
                     var obj = await selectedPlugin.Read(file);
                     string result = obj.ToString();
+                    assemblyInfo = selectedPlugin.GetAssemblyInfo();
+                    assemblyInfo.Name = file;
+
                     Console.WriteLine($"Result: {result}");
+                    return assemblyInfo;
                 } else {
                     Console.WriteLine("Invalid selection.");
+                    return null;
                 }
+
+            } catch (Exception ex) {
+                Console.WriteLine($"Reading Failed: {ex.Message}");
+                return null;
             }
+
         }
 
+        private static string CleanTypeName(string typeName) {
+            if (string.IsNullOrEmpty(typeName))
+                return string.Empty;
+
+            var cleanName = typeName.Replace("<", string.Empty).Replace(">", string.Empty);
+
+            return cleanName;
+        }
     }
+}
+
+    
         
-    }
+    
+

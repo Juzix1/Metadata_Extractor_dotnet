@@ -34,7 +34,6 @@ namespace XMLMetadataPlugin {
 
                 
 
-                // Now, let's read the file using XmlReader
                 using (var reader = XmlReader.Create(filePath)) {
                     if (reader.ReadState == ReadState.Initial) {
                         Console.WriteLine("Starting XML read...");
@@ -43,7 +42,7 @@ namespace XMLMetadataPlugin {
                     ExtractXmlData(reader);
                 }
 
-                return this; // Or you can return _dataDictionary if you need it
+                return this;
             } catch (XmlException xmlEx) {
                 Console.WriteLine($"Error reading XML file: {xmlEx.Message}");
                 return null;
@@ -60,13 +59,13 @@ namespace XMLMetadataPlugin {
                 }
 
                 _dataDictionary.Clear();
-                stream.Seek(0, SeekOrigin.Begin); // Reset stream position
+                stream.Seek(0, SeekOrigin.Begin);
 
                 using (var reader = XmlReader.Create(stream)) {
                     ExtractXmlData(reader);
                 }
 
-                return this; // Or you can return _dataDictionary if you need it
+                return this;
             } catch (XmlException xmlEx) {
                 Console.WriteLine($"Error reading XML stream: {xmlEx.Message}");
                 return null;

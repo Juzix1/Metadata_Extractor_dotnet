@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JSONMetadataPlugin", "JSONM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLLMetadataPlugin", "DLLMetadataPlugin\DLLMetadataPlugin.csproj", "{61683856-05F6-43BF-A642-83C9EDF4F2D5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLPlugin", "SQLPlugin\SQLPlugin.csproj", "{44005257-D7F6-4C66-85BB-D1AF22A2B048}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{61683856-05F6-43BF-A642-83C9EDF4F2D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61683856-05F6-43BF-A642-83C9EDF4F2D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61683856-05F6-43BF-A642-83C9EDF4F2D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44005257-D7F6-4C66-85BB-D1AF22A2B048}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44005257-D7F6-4C66-85BB-D1AF22A2B048}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44005257-D7F6-4C66-85BB-D1AF22A2B048}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44005257-D7F6-4C66-85BB-D1AF22A2B048}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

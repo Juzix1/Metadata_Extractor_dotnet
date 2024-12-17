@@ -20,6 +20,7 @@ namespace MetaDataLibrary {
         private IMetadataPlugin _selectedPlugin;
         private Logger logger;
 
+
         public MainWindow() {
             InitializeComponent();
             _pluginLoader = new PluginLoader();
@@ -46,6 +47,9 @@ namespace MetaDataLibrary {
                 var saveToXML = new MenuItem{ Header = "to XML"};
                 saveToXML.Click += SaveToXML_Click;
                 saveMenu.Items.Add(saveToXML);
+                var saveToDB = new MenuItem { Header = "to Database" };
+                saveToDB.Click += saveToDB_Click;
+                saveMenu.Items.Add(saveToDB);
 
                 // Domyślny wybór pierwszego pluginu
                 if (_pluginLoader.Plugins.Any()) {
@@ -56,6 +60,25 @@ namespace MetaDataLibrary {
                 MessageBox.Show("Error loading plugins. Check logs for details.");
             }
         }
+
+        private void saveToDB_Click(object sender, RoutedEventArgs e) {
+            if (_selectedPlugin == null) {
+                MessageBox.Show("No plugin selected.");
+                return;
+            }
+
+            try {
+                var assemblyInfo = _selectedPlugin.GetAssemblyInfo();
+                if (assemblyInfo != null) {
+                    SaveToDatabase(assemblyInfo);
+                } else {
+                    MessageBox.Show("No assembly information available to save.");
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Error saving data: {ex.Message}");
+            }
+        }
+        
 
         private void PluginMenuItem_Click(object sender, RoutedEventArgs e) {
             if (sender is MenuItem menuItem && menuItem.Tag is IMetadataPlugin plugin) {
@@ -94,6 +117,19 @@ namespace MetaDataLibrary {
                 }
             } catch (Exception ex) {
                 MessageBox.Show($"Error saving file: {ex.Message}");
+            }
+        }
+        private void SaveToDatabase(AssemblyInfo assemblyInfo) {
+            try {
+                
+
+                var saveTo = new SaveTo(logger);
+                saveTo.MSDatabase(assemblyInfo);
+
+                MessageBox.Show("File saved successfully to Database.");
+
+            } catch (Exception ex) {
+                MessageBox.Show($"Error saving to Database: {ex.Message}");
             }
         }
         private void SaveToXML_Click(object sender, RoutedEventArgs e) {
