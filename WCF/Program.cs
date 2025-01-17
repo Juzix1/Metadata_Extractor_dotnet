@@ -25,6 +25,7 @@ app.UseServiceModel(builder => {
     .AddServiceEndpoint<MetadataService, IMetadataService>(myWSHttpBinding, "/MetadataService/WSHttps");
 });
 
+
 var serviceMetadataBehavior = app.Services.GetRequiredService<CoreWCF.Description.ServiceMetadataBehavior>();
 serviceMetadataBehavior.HttpGetEnabled = true;
 
