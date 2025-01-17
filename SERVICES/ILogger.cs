@@ -16,6 +16,7 @@ namespace LoggingLibrary {
 
         public Task LogStartXmlSave();
         public Task LogErrorXmlSave(string message);
+        public Task LogErrorDBSave(string message);
 
 
     }

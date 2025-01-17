@@ -31,6 +31,7 @@ namespace MetaDataLibrary {
         public async Task LogFinishAsync() => await AppendLogAsync("Finished reading the DLL file.");
         public async Task LogStartXmlSave() => await AppendLogAsync("Starting to save file");
         public async Task LogErrorXmlSave(string message) => await AppendLogAsync("Failed to save XML file. Error: "+message);
+        public async Task LogErrorDBSave(string message) => await AppendLogAsync("Failed to save to the MicrosoftSQL Databse. Error: " + message);
 
 
     }

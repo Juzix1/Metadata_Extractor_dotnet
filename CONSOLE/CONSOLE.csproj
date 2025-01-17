@@ -21,8 +21,4 @@
     <ProjectReference Include="..\MODEL\MODEL.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Connected Services\" />
-  </ItemGroup>
-
 </Project>

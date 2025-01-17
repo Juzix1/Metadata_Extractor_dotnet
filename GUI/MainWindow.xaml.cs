@@ -1,101 +1,216 @@
-﻿using Castle.Core.Logging;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
-using System.Collections;
-using System.Windows;
-using LoggingLibrary;
-using CoreLibrary;
-using MODEL;
-using System.Windows.Controls;
 using System.IO;
-using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using MODEL.Plugins;
+using System.Collections;
+using CoreLibrary;
+using System.Xml.Serialization;
+using MODEL;
+using Castle.Core.Logging;
 
-namespace MetaDataLibrary
-{
+namespace MetaDataLibrary {
+    public partial class MainWindow : Window {
+        private readonly PluginLoader _pluginLoader;
+        private IMetadataPlugin _selectedPlugin;
+        private Logger logger;
 
-    public partial class MainWindow : Window
-    {
-        private readonly LoggingLibrary.ILogger _logger;
-        MetadataExtractor metadataExtractor;
-        public MainWindow()
-        {
+
+        public MainWindow() {
             InitializeComponent();
-            _logger = new Logger();
+            _pluginLoader = new PluginLoader();
+            logger = new Logger();
+            LoadPlugins();
         }
-        System.Windows.Controls.Button saveButton;
+
+        private void LoadPlugins() {
+            try {
+                _pluginLoader.LoadPlugins();
+                pluginsMenu.Items.Clear();
+
+                foreach (var plugin in _pluginLoader.Plugins) {
+                    var menuItem = new MenuItem {
+                        Header = plugin.Name,
+                        Tag = plugin
+                    };
+                    if (plugin == _pluginLoader.Plugins.FirstOrDefault())
+                        menuItem.IsChecked = true;
+                    menuItem.Click += PluginMenuItem_Click;
+                    pluginsMenu.Items.Add(menuItem);
+                }
+
+                var saveToXML = new MenuItem{ Header = "to XML"};
+                saveToXML.Click += SaveToXML_Click;
+                saveMenu.Items.Add(saveToXML);
+                var saveToDB = new MenuItem { Header = "to Database" };
+                saveToDB.Click += saveToDB_Click;
+                saveMenu.Items.Add(saveToDB);
+
+                // Domyślny wybór pierwszego pluginu
+                if (_pluginLoader.Plugins.Any()) {
+                    _selectedPlugin = _pluginLoader.Plugins.First();
+                }
+            } catch (Exception ex) {
+                Debug.WriteLine($"Error loading plugins: {ex.Message}");
+                MessageBox.Show("Error loading plugins. Check logs for details.");
+            }
+        }
+
+        private void saveToDB_Click(object sender, RoutedEventArgs e) {
+            if (_selectedPlugin == null) {
+                MessageBox.Show("No plugin selected.");
+                return;
+            }
+
+            try {
+                var assemblyInfo = _selectedPlugin.GetAssemblyInfo();
+                if (assemblyInfo != null) {
+                    SaveToDatabase(assemblyInfo);
+                } else {
+                    MessageBox.Show("No assembly information available to save.");
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Error saving data: {ex.Message}");
+            }
+        }
+        
+
+        private void PluginMenuItem_Click(object sender, RoutedEventArgs e) {
+            if (sender is MenuItem menuItem && menuItem.Tag is IMetadataPlugin plugin) {
+                foreach (MenuItem item in pluginsMenu.Items) {
+                    item.IsChecked = false;
+                }
+                
+                menuItem.IsChecked = true;
+                _selectedPlugin = plugin;
+                MessageBox.Show($"Selected plugin: {_selectedPlugin.Name}");
+            }
+        }
+        private void SaveToXml(AssemblyInfo assemblyInfo) {
+            try {
+                SaveFileDialog saveFileDialog = new SaveFileDialog {
+                    Filter = "XML files (*.xml)|*.xml",
+                    FileName = $"{assemblyInfo.Name}.xml"
+                };
+
+                if (saveFileDialog.ShowDialog() == true) {
+                    var dataList = new List<DataList>();
+
+                    foreach (var type in assemblyInfo.Types) {
+                        dataList.Add(new DataList { type = type.TypeName, name = type.Methods.FirstOrDefault()?.MethodName ?? string.Empty });
+                    }
 
 
+                    var saveTo = new SaveTo(logger);
 
-        private async void SearchFile(object sender, RoutedEventArgs e)
-        {
-            resetSaveButton();
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "DLL files (*.dll)|*.dll|EXE files (*.exe)|*.exe";
+                    saveTo.XmlFile(assemblyInfo.Name, dataList, saveFileDialog.FileName);
 
-            if (openFileDialog.ShowDialog() == true)
-            {
+                    MessageBox.Show("File saved successfully.");
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Error saving file: {ex.Message}");
+            }
+        }
+        private void SaveToDatabase(AssemblyInfo assemblyInfo) {
+            try {
+                
+
+                var saveTo = new SaveTo(logger);
+                saveTo.MSDatabase(assemblyInfo);
+
+                MessageBox.Show("File saved successfully to Database.");
+
+            } catch (Exception ex) {
+                MessageBox.Show($"Error saving to Database: {ex.Message}");
+            }
+        }
+        private void SaveToXML_Click(object sender, RoutedEventArgs e) {
+            if (_selectedPlugin == null) {
+                MessageBox.Show("No plugin selected.");
+                return;
+            }
+
+            try {
+                var assemblyInfo = _selectedPlugin.GetAssemblyInfo();
+                if (assemblyInfo != null) {
+                    SaveToXml(assemblyInfo);
+                } else {
+                    MessageBox.Show("No assembly information available to save.");
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Error saving data: {ex.Message}");
+            }
+        }
+        
+
+        private async void SearchFile(object sender, RoutedEventArgs e) {
+            if (_selectedPlugin == null) {
+                MessageBox.Show("No plugin selected!");
+                return;
+            }
+            var extension = _selectedPlugin.Name;
+            string[] subs = extension.Split(' ');
+            OpenFileDialog openFileDialog = new OpenFileDialog {
+                Filter = $"{subs[0]} files (*.{subs[0]})|*.{subs[0]}"
+
+            };
+
+            if (openFileDialog.ShowDialog() == true) {
                 filePath.Text = openFileDialog.FileName;
             }
 
-            try
-            {
-                metadataExtractor = new MetadataExtractor(_logger);
-                AssemblyInfo assemblyInfo = await metadataExtractor.ExtractMetadataAsync(filePath.Text);
-                dllInfo.Items.Clear();
-
-                foreach(var type in assemblyInfo.Types)
-                {
-                    dllInfo.Items.Add($"Type: {type.TypeName}");
-
-                    foreach(var method in type.Methods) {
-                        dllInfo.Items.Add($"  Method: {method.MethodName}");
-
-                    }
-                }
-                    saveButton = new System.Windows.Controls.Button() {
-                    Content = string.Format("Save to File"),
-                    Tag = "ADD",
-
-                };
-
-                saveButton.Click += new RoutedEventHandler(saveToRepository);
-
-                saveStack.Children.Add(saveButton);
-
-
-
-
-                
-            }catch(Exception se)
-            {
-                await _logger.LogErrorAsync();
-                MessageBox.Show($"Error in reading the DLL file: {se.Message}");
+            if (string.IsNullOrEmpty(filePath.Text) || !File.Exists(filePath.Text)) {
+                MessageBox.Show("Invalid file path!");
+                return;
             }
-        }
-
-        private void RefreshView(object sender, RoutedEventArgs e)
-        {
-
-            dllInfo.Items.Clear();
-            filePath.Clear();
-            resetSaveButton();
-        }
-        private void saveToRepository(object sender, RoutedEventArgs e) {
-            saveButton.IsEnabled = false;
-
 
             try {
-                SaveTo save = new SaveTo(_logger);
-                save.XmlFile(metadataExtractor.getDataList());
-            } catch {
-                Debug.WriteLine("test");
+                dllInfoTree.Items.Clear();
+                var plugin = await _selectedPlugin.Read(filePath.Text);
+                var result = _selectedPlugin.GetAssemblyInfo();
+
+                if (result is AssemblyInfo assemblyInfo) {
+                    var rootNode = ConvertAssemblyToTreeViewItem(assemblyInfo);
+                    dllInfoTree.Items.Add(rootNode);
+                }
+
+
+            } catch (Exception ex) {
+                Debug.WriteLine($"Error processing file: {ex.Message}");
+                MessageBox.Show($"Error processing file: {ex.Message}");
             }
         }
-        public void resetSaveButton() {
-            saveButton = null;
-            saveStack.Children.Clear();
+
+        private void RefreshView(object sender, RoutedEventArgs e) {
+            dllInfoTree.Items.Clear();
+            filePath.Clear();
+        }
+
+        private TreeViewItem ConvertAssemblyToTreeViewItem(AssemblyInfo assemblyInfo) {
+            var assemblyNode = new TreeViewItem {
+                Header = $"{assemblyInfo.Name}"
+            };
+
+            foreach (var type in assemblyInfo.Types) {
+                var typeNode = new TreeViewItem {
+                    Header = $"{type.TypeName}"
+                };
+
+                foreach (var method in type.Methods) {
+                    var methodNode = new TreeViewItem {
+                        Header = $"{method.MethodName}"
+                    };
+                    typeNode.Items.Add(methodNode);
+                }
+                assemblyNode.Items.Add(typeNode);
+
+            }
+            return assemblyNode;
         }
     }
 }

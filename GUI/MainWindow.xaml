@@ -6,27 +6,31 @@
         xmlns:local="clr-namespace:MetaDataLibrary"
         mc:Ignorable="d"
         Title="MetaData Extractor" Height="450" Width="800">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition/>
-            <RowDefinition Height="20px"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Plugins" x:Name="pluginsMenu" />
+            <MenuItem Header="Save" x:Name="saveMenu"/>
+        </Menu>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="20px"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
 
-        <Label HorizontalAlignment="Center" VerticalContentAlignment="Center" FontSize="32" FontWeight="Bold">Metadata File Extractor</Label>
-        <StackPanel Grid.Row="1" Margin="5" Orientation="Horizontal" HorizontalAlignment="Center">
-            <TextBox x:Name="filePath" Width="500" Margin="0,0,0,0" />
-            <Button x:Name="searchFile" Click="SearchFile" Margin="0, 0,10,0">Load File</Button>
-            <Button x:Name="refreshView" Content="Refresh View" Click="RefreshView"/>
-        </StackPanel>
-        <ListBox Grid.Row="2" x:Name="dllInfo" Margin="10,0,10,10" ScrollViewer.HorizontalScrollBarVisibility="Auto"></ListBox>
-        <StackPanel Grid.Row="3" Name="saveStack" Orientation="Horizontal" HorizontalAlignment="Center">
-            
-        </StackPanel>
-
-    </Grid>
+            <Label HorizontalAlignment="Center" VerticalContentAlignment="Center" FontSize="32" FontWeight="Bold">Metadata File Extractor</Label>
+            <StackPanel Grid.Row="1" Margin="5" Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBox x:Name="filePath" Width="500" Margin="0,0,0,0" />
+                <Button x:Name="searchFile" Click="SearchFile" Margin="0, 0,10,0">Load File</Button>
+                <Button x:Name="refreshView" Content="Refresh View" Click="RefreshView"/>
+            </StackPanel>
+            <TreeView Grid.Row="2" x:Name="dllInfoTree"  Margin="10,0,10,10" ScrollViewer.HorizontalScrollBarVisibility="Auto"></TreeView>
+            <StackPanel Grid.Row="3" Name="saveStack" Orientation="Horizontal" HorizontalAlignment="Center">
+            </StackPanel>
+        </Grid>
+    </DockPanel>
 </Window>
